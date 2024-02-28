@@ -36,9 +36,7 @@ _append_to_path() {
 _prepend_to_path /usr/local/bin
 _prepend_to_path /usr/local/sbin
 _prepend_to_path $HOME/.local/bin
-if [[ $(uname) == "Darwin" ]]; then
-  _prepend_to_path /opt/homebrew/bin
-fi
+_prepend_to_path /opt/homebrew/bin
 
 ################################################################################
 # Oh-My-ZSH prerequisite setup
@@ -56,6 +54,8 @@ export LS_COLORS=
 
 # These are the default OMZ plugins that we'll install.
 plugins=(
+  artisan
+  composer
   git
   brew
   history-substring-search
@@ -64,10 +64,82 @@ plugins=(
   git-auto-fetch
   fd
   ripgrep
-  fast-syntax-highlighting
+  F-Sy-H
   zsh-autosuggestions
+  fzf-tab
 )
 
+################################################################################
+# Editor setup
+################################################################################
+
+# Set Vim as the default editor.
+export EDITOR="vim"
+
+################################################################################
+# Set up other environment variables, aliases, and options
+################################################################################
+
+export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="bg=italic,underline"
+export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
+
+
+# Set shell options.
+setopt correct # enable spelling suggestions
+setopt rmstarsilent # silence rm * confirmation
+
+# Decrease delay in entering normal mode in shell.
+# https://www.johnhawthorn.com/2012/09/vi-escape-delays/
+KEYTIMEOUT=15
+
+################################################################################
+# Source Oh-My-ZSH.
+################################################################################
+
+# All theme and plugin configs must come beforehand.
+# Sourcing this may have side-effects, so order matters.
+# For the most part, it seems like bindkey gets overwritten.
+# Hence they must be after the OMZ sourcing.
+source $ZSH/oh-my-zsh.sh
+
+################################################################################
+# Actions with side-effects after sourcing Oh-My-ZSH
+################################################################################
+
+# Set key bindings.
+bindkey -v # vi mode for shell
+bindkey -e # enable C-x-e for shell editor
+# Key bindings for history search.
+bindkey '\e[3~' delete-char
+bindkey '^R' history-incremental-search-backward
+# Explicity bind home and end keys (in case of terminal compatibility issues)
+bindkey "${terminfo[khome]}" beginning-of-line
+bindkey "${terminfo[kend]}" end-of-line
+
+################################################################################
+# Set up aliases
+################################################################################
+
+# The bat executable may sometimes be called batcat on Debian/Ubuntu.
+#if _has bat; then
+#  alias bat="cat"
+#fi
+
+# Use Neovim instead of classic Vim (if available)
+if _has nvim; then
+  alias vim="nvim"
+  alias vi="nvim"
+  export EDITOR="nvim"
+fi
+
+# Alias `exa` as default `ls` command (if available).
+# This must come after OMZ. (The library overwrites this alias.)
+if _has exa; then
+  alias ls="exa"
+fi
+
+# Sail 
+alias sail='[ -f sail ] && sail || vendor/bin/sail'
 ################################################################################
 # FZF setup
 ################################################################################
@@ -115,96 +187,15 @@ if _has fzf; then
   zstyle ':fzf-tab:*' switch-group ',' '.'
 fi
 
-################################################################################
-# Editor setup
-################################################################################
-
-# Set Vim as the default editor.
-export EDITOR="vim"
-# Use Neovim instead of classic Vim (if available)
-if _has nvim; then
-  alias vim="nvim"
-  alias vi="nvim"
-  export EDITOR="nvim"
-fi
 
 ################################################################################
-# Tmux setup
+# Set up source files 
 ################################################################################
-
-# Use 256 color for tmux.
-alias tmux="TERM=screen-256color-bce tmux"
-# Attempt to take over existing sessions before creating a new tmux session.
-TMUX_DEFAULT_SESSION="tmux"
-alias t="tmux -u a -d -t ${TMUX_DEFAULT_SESSION} 2> /dev/null || tmux -u new -s ${TMUX_DEFAULT_SESSION}"
-if [[ -z "$TMUX" ]]; then
-  # Switch to xterm if we're in a tmux session.
-  TERM="xterm-256color"
-fi
-
-################################################################################
-# Set up other environment variables, aliases, and options
-################################################################################
-
-# Make sure we're using UTF-8.
-export LANG=en_US.UTF-8
-export LC_CTYPE=en_US.UTF-8
-
-export ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE="bg=italic,underline"
-export RIPGREP_CONFIG_PATH="$HOME/.ripgreprc"
-# Export theme for http://github.com/sharkdp/bat.
-export BAT_THEME="Solarized (dark)"
-
-# The bat executable may sometimes be called batcat on Debian/Ubuntu.
-if _has batcat; then
-  alias bat="batcat"
-fi
-
-# Set shell options.
-setopt correct # enable spelling suggestions
-setopt rmstarsilent # silence rm * confirmation
-
-# Decrease delay in entering normal mode in shell.
-# https://www.johnhawthorn.com/2012/09/vi-escape-delays/
-KEYTIMEOUT=1
-
-################################################################################
-# Source Oh-My-ZSH.
-################################################################################
-
-# All theme and plugin configs must come beforehand.
-# Sourcing this may have side-effects, so order matters.
-# For the most part, it seems like bindkey gets overwritten.
-# Hence they must be after the OMZ sourcing.
-source $ZSH/oh-my-zsh.sh
-
-################################################################################
-# Actions with side-effects after sourcing Oh-My-ZSH
-################################################################################
-
-# Set key bindings.
-bindkey -v # vi mode for shell
-bindkey -e # enable C-x-e for shell editor
-# Key bindings for history search.
-bindkey '\e[3~' delete-char
-bindkey '^R' history-incremental-search-backward
-# Explicity bind home and end keys (in case of terminal compatibility issues)
-bindkey "${terminfo[khome]}" beginning-of-line
-bindkey "${terminfo[kend]}" end-of-line
-
-# Alias `exa` as default `ls` command (if available).
-# This must come after OMZ. (The library overwrites this alias.)
-if _has exa; then
-  alias ls="exa"
-fi
 
 # Source fzf scripts via local installation.
 # OMZ overwrites some of these scripts, so this must come afterwards.
 if _has fzf; then
-  # Source fzf key bindings and auto-completion.
-  # NOTE: This uses the ${fzf_path} variable from earlier. This is intentional.
-  source "${fzf_path}/shell/key-bindings.zsh"
-  source "${fzf_path}/shell/completion.zsh"
+  source "$HOME/.fzf.zsh"
 fi
 
 # To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.

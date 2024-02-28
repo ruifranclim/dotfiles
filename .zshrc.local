@@ -1,0 +1,20 @@
+alias sail='[ -f sail ] && sh sail || sh vendor/bin/sail'
+alias cat='bat --paging=never'
+
+
+alias work='(){ timer $1m && terminal-notifier -message "Pomodoro" -title "Work Timer is up! Take a Break 😊" -sound Crystal ;}'
+
+
+alias rest='(){ timer $1m && terminal-notifier -message "Pomodoro" -title "Break is over! Get back to work 😬" -sound Crystal ;}'
+
+alias nconf="nvim ~/.config/nvim"
+
+
+# alias ecap
+alias ecap="cd ~/Projetos/IPCA_ECAP/GIT"
+alias ecap-web="cd ~/Projetos/IPCA_ECAP/GIT/IPCA_ECAP_WEB"
+
+# alias ecape-web
+alias ecap-web-up="sail up -d && sail npm run dev"
+alias ecap-web-queue="sail php artisan queue:work -v"
+
