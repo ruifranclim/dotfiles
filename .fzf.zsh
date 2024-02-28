@@ -1,0 +1,1 @@
+/Users/ruifranclim/.fzf.zsh
